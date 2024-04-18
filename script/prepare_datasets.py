@@ -7,7 +7,7 @@ def prepare_dataset(dataset_dir, training_list_path, testing_list_path):
     all_files = []
     for root, dirs, files in os.walk(dataset_dir):
         for file in files:
-            if file.endswith('.npz'):
+            if file.endswith('.mat'):
                 relative_path = os.path.relpath(root, dataset_dir)
                 all_files.append((os.path.join(relative_path, file), os.path.basename(relative_path)))
     
@@ -25,8 +25,8 @@ def prepare_dataset(dataset_dir, training_list_path, testing_list_path):
     test_df['file_path'].to_csv(testing_list_path, header=False, index=False)
 
 # Example usage
-dataset_dir = '/Users/demiladepopoola/Development/Archive/TESS_npz'  # Update this to the path where your dataset is extracted
-training_list_path = '/Users/demiladepopoola/Development/Archive/TESS_npz/train_list.txt'
-testing_list_path = '/Users/demiladepopoola/Development/Archive/TESS_npz/test_list.txt'
+dataset_dir = '/Users/demiladepopoola/Development/TESS_mat'  # Update this to the path where your dataset is extracted
+training_list_path = '/Users/demiladepopoola/Development/TESS_mat/train_list.txt'
+testing_list_path = '/Users/demiladepopoola/Development/TESS_mat/test_list.txt'
 
 prepare_dataset(dataset_dir, training_list_path, testing_list_path)

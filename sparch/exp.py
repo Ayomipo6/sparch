@@ -23,8 +23,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from sparch.dataloaders.nonspiking_datasets import load_hd_or_sc
-from sparch.dataloaders.spiking_datasets import load_shd_or_ssc
+from sparch.dataloaders.nonspiking_datasets import load_datasets
+from sparch.dataloaders.spiking_datasets import load_spiking_datasets
 from sparch.models.anns import ANN
 from sparch.models.snns import SNN
 from sparch.parsers.model_config import print_model_options
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 class Experiment:
     """
     Class for training and testing models (ANNs and SNNs) on all four
-    datasets for speech command recognition (shd, ssc, hd and sc).
+    datasets for speech command recognition (shd, tess, lautess, spitess, ssc, hd and sc).
     """
 
     def __init__(self, args):
@@ -216,12 +216,25 @@ class Experiment:
         This function prepares dataloaders for the desired dataset.
         """
         # For the spiking datasets
-        if self.dataset_name in ["shd", "ssc"]:
+        if self.dataset_name in ["shd", "lautess", "spitess", "ssc"]:
+            
+            if self.dataset_name == "shd":
+                self.nb_inputs = 700
+            elif (self.dataset_name == "lautess"):
+                self.nb_inputs = 700
+            elif (self.dataset_name == "spitess"):
+                self.nb_inputs = 120
+            elif self.dataset_name == "ssc":
+                self.nb_inputs = 700
 
-            self.nb_inputs = 700
-            self.nb_outputs = 20 if self.dataset_name == "shd" else 35
 
-            self.train_loader = load_shd_or_ssc(
+            if self.dataset_name == "shd":
+                self.nb_outputs = 20
+            elif (self.dataset_name == "lautess" or self.dataset_name == "spitess"):
+                self.nb_outputs = 14
+            elif self.dataset_name == "ssc":
+                self.nb_outputs = 35
+            self.train_loader = load_spiking_datasets(
                 dataset_name=self.dataset_name,
                 data_folder=self.data_folder,
                 split="train",
@@ -229,7 +242,7 @@ class Experiment:
                 nb_steps=100,
                 shuffle=True,
             )
-            self.valid_loader = load_shd_or_ssc(
+            self.valid_loader = load_spiking_datasets(
                 dataset_name=self.dataset_name,
                 data_folder=self.data_folder,
                 split="valid",
@@ -238,7 +251,7 @@ class Experiment:
                 shuffle=False,
             )
             if self.dataset_name == "ssc":
-                self.test_loader = load_shd_or_ssc(
+                self.test_loader = load_spiking_datasets(
                     dataset_name=self.dataset_name,
                     data_folder=self.data_folder,
                     split="test",
@@ -252,12 +265,17 @@ class Experiment:
                 )
 
         # For the non-spiking datasets
-        elif self.dataset_name in ["hd", "sc"]:
+        elif self.dataset_name in ["hd", "sc", "tess"]:
 
             self.nb_inputs = 40
-            self.nb_outputs = 20 if self.dataset_name == "hd" else 35
+            if self.dataset_name == "hd":
+                self.nb_outputs = 20
+            elif self.dataset_name == "tess":
+                self.nb_outputs = 14
+            elif self.dataset_name == "sc":
+                self.nb_outputs = 35
 
-            self.train_loader = load_hd_or_sc(
+            self.train_loader = load_datasets(
                 dataset_name=self.dataset_name,
                 data_folder=self.data_folder,
                 split="train",
@@ -265,7 +283,7 @@ class Experiment:
                 use_augm=self.use_augm,
                 shuffle=True,
             )
-            self.valid_loader = load_hd_or_sc(
+            self.valid_loader = load_datasets(
                 dataset_name=self.dataset_name,
                 data_folder=self.data_folder,
                 split="valid",
@@ -274,7 +292,7 @@ class Experiment:
                 shuffle=False,
             )
             if self.dataset_name == "sc":
-                self.test_loader = load_hd_or_sc(
+                self.test_loader = load_datasets(
                     dataset_name=self.dataset_name,
                     data_folder=self.data_folder,
                     split="test",
@@ -349,7 +367,8 @@ class Experiment:
         epoch_spike_rate = 0
 
         # Loop over batches from train set
-        for step, (x, _, y) in enumerate(self.train_loader):
+        for step, (x, y) in enumerate(self.train_loader):
+            # Your training code here
 
             # Dataloader uses cpu to allow pin memory
             x = x.to(self.device)
@@ -414,7 +433,7 @@ class Experiment:
             epoch_spike_rate = 0
 
             # Loop over batches from validation set
-            for step, (x, _, y) in enumerate(self.valid_loader):
+            for step, (x, y) in enumerate(self.valid_loader):
 
                 # Dataloader uses cpu to allow pin memory
                 x = x.to(self.device)
@@ -480,7 +499,7 @@ class Experiment:
             logging.info("\n------ Begin Testing ------\n")
 
             # Loop over batches from test set
-            for step, (x, _, y) in enumerate(test_loader):
+            for step, (x, y) in enumerate(test_loader):
 
                 # Dataloader uses cpu to allow pin memory
                 x = x.to(self.device)

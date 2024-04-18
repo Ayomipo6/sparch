@@ -209,8 +209,105 @@ class SpeechCommands(Dataset):
 
         return xs, xlens, ys
 
+class TorontoEmotionalSpeechSet(Dataset):
+    """
+    Dataset class for the original non-spiking Toronto emotional speech set (TESS)
+    dataset. Generated mel-spectrograms use 40 bins by default.
 
-def load_hd_or_sc(
+    Arguments
+    ---------
+    data_folder : str
+        Path to folder containing the Toronto emotional speech set Digits dataset.
+    split : str
+        Split of the TESS dataset, must be either "train" or "test".
+    use_augm : bool
+        Whether to perform data augmentation or not.
+    min_snr, max_snr : float
+        Minimum and maximum amounts of noise if augmentation is used.
+    p_noise : float in (0, 1)
+        Probability to apply noise if augmentation is used, i.e.,
+        proportion of examples to which augmentation is applied.
+    """
+
+    def __init__(
+        self,
+        data_folder,
+        split,
+        use_augm,
+        min_snr,
+        max_snr,
+        p_noise,
+    ):
+
+        if split not in ["train", "test"]:
+            raise ValueError(f"Invalid split {split}")
+
+        # Get paths to all audio files
+        self.data_folder = data_folder
+
+        def load_list(filename):
+            filepath = os.path.join(self.data_folder, filename)
+            with open(filepath) as f:
+                return [os.path.join(self.data_folder, i.strip()) for i in f]
+
+        if split == "train":
+            files = sorted(str(p) for p in Path(data_folder).glob("*/*.flac"))
+            exclude = load_list("test_list.txt")
+            exclude = set(exclude)
+            self.file_list = [
+                w for w in files if w not in exclude
+            ]
+
+        else:
+            self.file_list = load_list(str(split) + "_list.txt")
+        
+        self.labels = sorted(next(os.walk(data_folder))[1])
+
+        # Data augmentation
+        if use_augm and split == "train":
+            transforms = [
+                RandomApply([PolarityInversion()], p=0.8),
+                RandomApply([Noise(min_snr, max_snr)], p_noise),
+                RandomApply([Gain()], p=0.3),
+                RandomApply([Reverb(sample_rate=16000)], p=0.6),
+            ]
+            self.transf = ComposeMany(transforms, num_augmented_samples=1)
+        else:
+            self.transf = lambda x: x.unsqueeze(dim=0)
+
+    def __len__(self):
+        return len(self.file_list)
+
+    def __getitem__(self, index):
+
+        # Read waveform
+        filename = self.file_list[index]
+        x, _ = torchaudio.load(filename)
+
+        # Apply augmentation
+        x = self.transf(x).squeeze(dim=0)
+
+        # Compute acoustic features
+        x = torchaudio.compliance.kaldi.fbank(x, num_mel_bins=40)
+
+        # Get label
+        relpath = os.path.relpath(filename, self.data_folder)
+        label, _ = os.path.split(relpath)
+        y = torch.tensor(self.labels.index(label))
+
+        return x, y
+
+    def generateBatch(self, batch):
+
+        xs, ys = zip(*batch)
+        xlens = torch.tensor([x.shape[0] for x in xs])
+        xs = torch.nn.utils.rnn.pad_sequence(xs, batch_first=True)
+        ys = torch.LongTensor(ys)
+
+        return xs, xlens, ys
+
+
+def load_datasets(
     dataset_name,
     data_folder,
     split,
@@ -224,12 +321,12 @@ def load_hd_or_sc(
 ):
     """
     This function creates a dataloader for a given split of
-    the HD or SC dataset.
+    dataset.
 
     Arguments
     ---------
     dataset_name : str
-        The name of the dataset, either hd or sc.
+        The name of the dataset
     data_folder : str
         Path to folder containing the desired dataset.
     split : str
@@ -249,7 +346,7 @@ def load_hd_or_sc(
     workers : int
         Number of workers.
     """
-    if dataset_name not in ["hd", "sc"]:
+    if dataset_name not in ["hd", "sc", "tess"]:
         raise ValueError(f"Invalid dataset name {dataset_name}")
 
     if split not in ["train", "valid", "test"]:
@@ -264,8 +361,18 @@ def load_hd_or_sc(
         dataset = HeidelbergDigits(
             data_folder, split, use_augm, min_snr, max_snr, p_noise
         )
+    
+    elif dataset_name == "tess":
 
-    else:
+        if split in ["valid", "test"]:
+            split = "test"
+            logging.info("\nTESS uses the same split for validation and testing.\n")
+
+        dataset = TorontoEmotionalSpeechSet(
+            data_folder, split, use_augm, min_snr, max_snr, p_noise
+        )
+
+    elif dataset_name == "sc":
         if split == "train":
             split = "training"
         elif split == "valid":
