@@ -1,0 +1,11 @@
+dist/sparch-1.0-py3.7.egg
+build/
+__pycache__
+sparch.egg-info
+.DS_Store
+*.pth
+*.egg
+.bandit
+.flake8
+.metals/metals.log
+.metals/metals.mv.db
