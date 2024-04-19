@@ -193,7 +193,7 @@ class MatSpikingDataset(Dataset):
         self,
         data_folder,
         split,
-        nb_steps=1000,
+        nb_steps=100,
     ):
         self.max_time = 2.40
         self.device = "cpu"
@@ -225,7 +225,7 @@ class MatSpikingDataset(Dataset):
     def __len__(self):
         return len(self.file_list)
 
-    def __getitem__(self, index):
+    # def __getitem__(self, index):
         # Load .mat file
         filename = self.file_list[index]
         mat_data = loadmat(filename)
@@ -249,14 +249,47 @@ class MatSpikingDataset(Dataset):
         y = torch.tensor(label_index, dtype=torch.long)
 
         return x, y
+   
+    def __getitem__(self, index):
+        # Load .mat file
+        filename = self.file_list[index]
+        mat_data = loadmat(filename)
+
+        # Extract the spiking data
+        spikes = mat_data['soft_spikegrams']
+        firing_times = spikes[:, 2]  # T values
+        firing_channels = spikes[:, 0].astype(int) - 1  # C values, converting to 0-based index
+
+        # Dynamically determine max_time for this specific data item
+        item_max_time = firing_times.max()
+
+        # Normalize the time values to fit into the number of steps
+        # Using item-specific max_time
+        time_bins = np.linspace(0, item_max_time, num=self.nb_steps)
+        times = np.digitize(firing_times, time_bins) - 1
+
+        # Ensure times are within bounds after digitization
+        times = np.clip(times, 0, self.nb_steps - 1)
+
+        # Create the input tensor
+        x = torch.zeros(self.nb_steps, self.nb_units, dtype=torch.float)
+        for t, c in zip(times, firing_channels):
+            x[t, c] += 1  # Increment to account for possible multiple spikes in the same bin for a channel
+
+        # Extract label from the file path
+        label_name = Path(filename).parent.name
+        label_index = self.labels.index(label_name)  # Convert folder name to index
+        y = torch.tensor(label_index, dtype=torch.long)
+
+        return x, y
 
     def generateBatch(self, batch):
-        # Batch generation method adapted for .mat data
-        xs, ys = zip(*batch)
-        xs = torch.stack(xs)
-        ys = torch.stack(ys)
+            # Batch generation method adapted for .mat data
+            xs, ys = zip(*batch)
+            xs = torch.stack(xs)
+            ys = torch.stack(ys)
 
-        return xs, ys
+            return xs, ys
 
 def load_spiking_datasets(
     dataset_name,
