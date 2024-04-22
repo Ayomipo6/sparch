@@ -320,7 +320,7 @@ def load_spiking_datasets(
     workers : int
         Number of workers.
     """
-    if dataset_name not in ["shd", "lautess", "ssc", "spitess"]:
+    if dataset_name not in ["shd", "lautess", "ssc", "spitess", "spihd"]:
         raise ValueError(f"Invalid dataset name {dataset_name}")
 
     if split not in ["train", "valid", "test"]:
@@ -335,10 +335,15 @@ def load_spiking_datasets(
     if dataset_name == "spitess" and split == "valid":
         logging.info("TESS does not have a validation split. Using test split.")
         split = "test"
+    if dataset_name == "spihd" and split == "valid":
+        logging.info("TESS does not have a validation split. Using test split.")
+        split = "test"
 
     if dataset_name == "lautess":
         dataset = NPZSpikingDataset(data_folder, split, nb_steps)
     elif dataset_name == "spitess":
+        dataset = MatSpikingDataset(data_folder, split, 100)
+    elif dataset_name == "spihd":
         dataset = MatSpikingDataset(data_folder, split, 100)
     else:
         dataset = SpikingDataset(dataset_name, data_folder, split, nb_steps)

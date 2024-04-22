@@ -226,7 +226,8 @@ class Experiment:
                 self.nb_inputs = 120
             elif self.dataset_name == "ssc":
                 self.nb_inputs = 700
-
+            elif (self.dataset_name == "spihd"):
+                self.nb_inputs = 120
 
             if self.dataset_name == "shd":
                 self.nb_outputs = 20
@@ -234,6 +235,8 @@ class Experiment:
                 self.nb_outputs = 14
             elif self.dataset_name == "ssc":
                 self.nb_outputs = 35
+            elif self.dataset_name == "spihd":
+                self.nb_outputs = 20
             self.train_loader = load_spiking_datasets(
                 dataset_name=self.dataset_name,
                 data_folder=self.data_folder,

@@ -46,7 +46,7 @@ def add_training_options(parser):
     parser.add_argument(
         "--dataset_name",
         type=str,
-        choices=["shd", "ssc", "hd", "sc", "tess","lautess", "spitess"],
+        choices=["shd", "ssc", "hd", "sc", "tess","lautess", "spites","spihd"],
         default="shd",
         help="Dataset name (shd, ssc, hd or sc).",
     )
