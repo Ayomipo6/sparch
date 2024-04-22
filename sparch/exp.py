@@ -216,7 +216,7 @@ class Experiment:
         This function prepares dataloaders for the desired dataset.
         """
         # For the spiking datasets
-        if self.dataset_name in ["shd", "lautess", "spitess", "ssc"]:
+        if self.dataset_name in ["shd", "lautess", "spitess", "ssc", "spihd"]:
             
             if self.dataset_name == "shd":
                 self.nb_inputs = 700
