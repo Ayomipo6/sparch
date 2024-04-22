@@ -344,7 +344,7 @@ def load_spiking_datasets(
     elif dataset_name == "spitess":
         dataset = MatSpikingDataset(data_folder, split, 100)
     elif dataset_name == "spihd":
-        dataset = MatSpikingDataset(data_folder, split, 100)
+        dataset = MatSpikingDataset(data_folder, split, 1000)
     else:
         dataset = SpikingDataset(dataset_name, data_folder, split, nb_steps)
         
