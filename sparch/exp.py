@@ -26,6 +26,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sparch.dataloaders.nonspiking_datasets import load_datasets
 from sparch.dataloaders.spiking_datasets import load_spiking_datasets
 from sparch.models.anns import ANN
+from sparch.models.cnn import CNN
 from sparch.models.snns import SNN
 from sparch.parsers.model_config import print_model_options
 from sparch.parsers.training_config import print_training_options
@@ -348,6 +349,21 @@ class Experiment:
                 bidirectional=self.bidirectional,
                 use_readout_layer=True,
             ).to(self.device)
+
+            logging.info(f"\nCreated new non-spiking model:\n {self.net}\n")
+
+        elif self.model_type in ["CNN"]:
+            self.net = CNN(
+                input_shape=input_shape,
+                conv_layers=[
+                    (1, 16, 3, 1, 1, True),  # (in_channels, out_channels, kernel_size, stride, padding, batch_norm)
+                    (16, 32, 3, 1, 1, True)
+                ],
+                fc_layer_sizes=[128, 64],
+                num_classes=self.nb_outputs,
+                dropout=self.pdrop,
+            ).to(self.device)
+
 
             logging.info(f"\nCreated new non-spiking model:\n {self.net}\n")
 

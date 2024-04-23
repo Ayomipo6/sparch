@@ -20,7 +20,7 @@ def add_model_options(parser):
     parser.add_argument(
         "--model_type",
         type=str,
-        choices=["LIF", "adLIF", "RLIF", "RadLIF", "MLP", "RNN", "LiGRU", "GRU"],
+        choices=["LIF", "adLIF", "RLIF", "RadLIF", "MLP", "RNN", "LiGRU", "GRU","CNN"],
         default="LIF",
         help="Type of ANN or SNN model.",
     )
