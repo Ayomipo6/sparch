@@ -24,7 +24,7 @@ from torchaudio_augmentations import Noise
 from torchaudio_augmentations import PolarityInversion
 from torchaudio_augmentations import RandomApply
 from torchaudio_augmentations import Reverb
-from speech2spikes.speech2spikes import S2S
+# from speech2spikes.speech2spikes import S2S
 
 logger = logging.getLogger(__name__)
 
