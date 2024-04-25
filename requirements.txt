@@ -16,4 +16,5 @@ torchaudio_augmentations==0.2.4
 pandas==2.0.0
 scikit-learn
 librosa
+seaborn
 

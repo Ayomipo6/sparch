@@ -16,7 +16,11 @@ import logging
 import os
 import time
 from datetime import timedelta
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+import numpy as np
+import torch
 import numpy as np
 import torch
 import torch.nn as nn
@@ -217,7 +221,7 @@ class Experiment:
         This function prepares dataloaders for the desired dataset.
         """
         # For the spiking datasets
-        if self.dataset_name in ["shd", "lautess", "spitess", "ssc", "spihd"]:
+        if self.dataset_name in ["shd", "lautess", "lausc", "spitess", "spisc", "ssc", "spihd"]:
             
             if self.dataset_name == "shd":
                 self.nb_inputs = 700
@@ -225,16 +229,18 @@ class Experiment:
                 self.nb_inputs = 700
             elif (self.dataset_name == "spitess"):
                 self.nb_inputs = 120
-            elif self.dataset_name == "ssc":
+            elif self.dataset_name == "ssc" or self.dataset_name == "lausc":
                 self.nb_inputs = 700
             elif (self.dataset_name == "spihd"):
+                self.nb_inputs = 120
+            elif (self.dataset_name == "spisc"):
                 self.nb_inputs = 120
 
             if self.dataset_name == "shd":
                 self.nb_outputs = 20
             elif (self.dataset_name == "lautess" or self.dataset_name == "spitess"):
                 self.nb_outputs = 14
-            elif self.dataset_name == "ssc":
+            elif self.dataset_name == "ssc" or self.dataset_name == "spisc" or self.dataset_name == "lausc":
                 self.nb_outputs = 35
             elif self.dataset_name == "spihd":
                 self.nb_outputs = 20
@@ -254,7 +260,7 @@ class Experiment:
                 nb_steps=100,
                 shuffle=False,
             )
-            if self.dataset_name == "ssc":
+            if self.dataset_name == "ssc" or self.dataset_name == "spisc" or self.dataset_name == "lausc":
                 self.test_loader = load_spiking_datasets(
                     dataset_name=self.dataset_name,
                     data_folder=self.data_folder,
@@ -505,12 +511,7 @@ class Experiment:
             return best_epoch, best_acc
 
     def test_one_epoch(self, test_loader):
-        """
-        This function tests the model with a single pass over the
-        testing split of the dataset.
-        """
         with torch.no_grad():
-
             self.net.eval()
             losses, accs = [], []
             epoch_spike_rate = 0
@@ -519,8 +520,6 @@ class Experiment:
 
             # Loop over batches from test set
             for step, (x, y) in enumerate(test_loader):
-
-                # Dataloader uses cpu to allow pin memory
                 x = x.to(self.device)
                 y = y.to(self.device)
 
@@ -542,10 +541,8 @@ class Experiment:
 
             # Test loss
             test_loss = np.mean(losses)
-            logging.info(f"Test loss={test_loss}")
-
-            # Test accuracy
             test_acc = np.mean(accs)
+            logging.info(f"Test loss={test_loss}")
             logging.info(f"Test acc={test_acc}")
 
             # Test spike activity

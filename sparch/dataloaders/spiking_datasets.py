@@ -116,7 +116,7 @@ class NPZSpikingDataset(Dataset):
         self.max_time = 2.9
         self.time_bins = np.linspace(0, self.max_time, num=self.nb_steps)
 
-        if split not in ["train", "test"]:
+        if split not in ["train", "test", "valid", "training", "validation", "testing"]:
             raise ValueError(f"Invalid split {split}")
 
         # Get paths to all audio files
@@ -127,15 +127,7 @@ class NPZSpikingDataset(Dataset):
             with open(filepath) as f:
                 return [os.path.join(self.data_folder, i.strip()) for i in f]
 
-        if split == "train":
-            files = sorted(str(p) for p in Path(data_folder).glob("*/*.npz"))
-            exclude = load_list("test_list.txt")
-            exclude = set(exclude)
-            self.file_list = [
-                w for w in files if w not in exclude
-            ]
-        else:
-            self.file_list = load_list(str(split) + "_list.txt")
+        self.file_list = load_list(str(split) + "_list.txt")
         
         self.labels = sorted(next(os.walk(data_folder))[1])
 
@@ -201,7 +193,7 @@ class MatSpikingDataset(Dataset):
         self.nb_units = 120  # This is based on the 'C' value range from your provided structure.
         self.data_folder = data_folder
 
-        if split not in ["train", "test"]:
+        if split not in ["train", "test", "valid", "training", "validation", "testing"]:
             raise ValueError(f"Invalid split {split}")
 
         # Load list of .mat files
@@ -210,46 +202,14 @@ class MatSpikingDataset(Dataset):
             with open(filepath) as f:
                 return [os.path.join(self.data_folder, i.strip()) for i in f]
 
-        if split == "train":
-            files = sorted(str(p) for p in Path(data_folder).glob("*/*.mat"))
-            exclude = load_list("test_list.txt")
-            exclude = set(exclude)
-            self.file_list = [
-                w for w in files if w not in exclude
-            ]
-        else:
-            self.file_list = load_list(str(split) + "_list.txt")
+     
+        self.file_list = load_list(str(split) + "_list.txt")
         
         self.labels = sorted(next(os.walk(data_folder))[1])
 
     def __len__(self):
         return len(self.file_list)
-
-    # def __getitem__(self, index):
-        # Load .mat file
-        filename = self.file_list[index]
-        mat_data = loadmat(filename)
-
-        # Extract the spiking data
-        spikes = mat_data['soft_spikegrams']
-        firing_times = spikes[:, 2]  # T values
-        firing_channels = spikes[:, 0].astype(int) - 1  # C values, converting to 0-based index
-
-        # Normalize the time values to fit into the number of steps
-        time_bins = np.linspace(0, self.max_time, num=self.nb_steps)
-        times = np.digitize(firing_times, time_bins) - 1
-
-        # Create the input tensor
-        x = torch.zeros(self.nb_steps, self.nb_units)
-        x[times, firing_channels] = torch.from_numpy(spikes[:, 1]).float()  # Convert to Float
-
-        # Extract label from the file path
-        label_name = Path(filename).parent.name
-        label_index = self.labels.index(label_name)  # Convert folder name to index
-        y = torch.tensor(label_index, dtype=torch.long)
-
-        return x, y
-   
+    
     def __getitem__(self, index):
         # Load .mat file
         filename = self.file_list[index]
@@ -320,7 +280,7 @@ def load_spiking_datasets(
     workers : int
         Number of workers.
     """
-    if dataset_name not in ["shd", "lautess", "ssc", "spitess", "spihd"]:
+    if dataset_name not in ["shd", "lautess", "ssc", "spitess", "spihd", "lausc", "spisc"]:
         raise ValueError(f"Invalid dataset name {dataset_name}")
 
     if split not in ["train", "valid", "test"]:
@@ -339,11 +299,24 @@ def load_spiking_datasets(
         logging.info("TESS does not have a validation split. Using test split.")
         split = "test"
 
+    if (dataset_name == "spisc" or dataset_name == "lausc") and split == "valid":
+        split = "validation"
+
+    if (dataset_name == "spisc" or dataset_name == "lausc")  and split == "test":
+        split = "testing"
+
+    if (dataset_name == "spisc" or dataset_name == "lausc") and split == "train":
+        split = "training"
+
+    if dataset_name == "lausc":
+        dataset = NPZSpikingDataset(data_folder, split, nb_steps)
     if dataset_name == "lautess":
         dataset = NPZSpikingDataset(data_folder, split, nb_steps)
     elif dataset_name == "spitess":
         dataset = MatSpikingDataset(data_folder, split, nb_steps)
     elif dataset_name == "spihd":
+        dataset = MatSpikingDataset(data_folder, split, nb_steps)
+    elif dataset_name == "spisc":
         dataset = MatSpikingDataset(data_folder, split, nb_steps)
     else:
         dataset = SpikingDataset(dataset_name, data_folder, split, nb_steps)

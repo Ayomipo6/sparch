@@ -24,6 +24,7 @@ from torchaudio_augmentations import Noise
 from torchaudio_augmentations import PolarityInversion
 from torchaudio_augmentations import RandomApply
 from torchaudio_augmentations import Reverb
+from speech2spikes.speech2spikes import S2S
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,7 @@ class HeidelbergDigits(Dataset):
             self.file_list = f.read().splitlines()
 
         # Data augmentation
+        # this uses the torchaudio_augmentations library if we set use_augm to True
         if use_augm and split == "train":
             transforms = [
                 RandomApply([PolarityInversion()], p=0.8),
@@ -93,6 +95,7 @@ class HeidelbergDigits(Dataset):
         x = self.transf(x).squeeze(dim=0)
 
         # Compute acoustic features
+        
         x = torchaudio.compliance.kaldi.fbank(x, num_mel_bins=40)
 
         # Get label (digits 0-9 in eng and germ)
@@ -182,6 +185,19 @@ class SpeechCommands(Dataset):
         return len(self.file_list)
 
     def __getitem__(self, index):
+        
+        # # Read waveform
+        # filename = self.file_list[index]
+        # x, sample_rate = torchaudio.load(filename)
+
+        # # Apply augmentation
+        # x = self.transf(x).squeeze(dim=0)
+
+        # # Compute MFCC
+        # mfcc_transform = torchaudio.transforms.MFCC(sample_rate=sample_rate, n_mfcc=40)
+        # mfccs = mfcc_transform(x)
+
+
 
         # Read waveform
         filename = self.file_list[index]
