@@ -310,7 +310,7 @@ def load_spiking_datasets(
 
     if dataset_name == "lausc":
         dataset = NPZSpikingDataset(data_folder, split, nb_steps)
-    if dataset_name == "lautess":
+    elif dataset_name == "lautess":
         dataset = NPZSpikingDataset(data_folder, split, nb_steps)
     elif dataset_name == "spitess":
         dataset = MatSpikingDataset(data_folder, split, nb_steps)
