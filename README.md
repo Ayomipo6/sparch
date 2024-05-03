@@ -8,7 +8,7 @@ SPDX-License-Identifier: BSD-3-clause
 This file is part of the sparch package
 --->
 
-# SpArch: Spiking Architectures for Speech Technology
+
 
 This [PyTorch](https://pytorch.org/) based toolkit is for developing spiking neural networks (SNNs) by training and testing them on speech command recognition tasks. It was published as part of the following paper: [A Surrogate Gradient Spiking Baseline for Speech Command Recognition](https://doi.org/10.3389/fnins.2022.865897) by A. Bittar and P. Garner (2022).
 
@@ -17,27 +17,38 @@ This [PyTorch](https://pytorch.org/) based toolkit is for developing spiking neu
 
 ### Spiking data sets
 
-In order to rectify the absence of free spike-based benchmark datasets, [Cramer et al. (2020)](https://doi.org/10.1109/TNNLS.2020.3044364) have recently released two spiking datasets for speech command recognition using [LAUSCHER](https://github.com/electronicvisions/lauscher), a biologically plausible model to convert audio waveforms into spike trains based on physiological processes.
+The spiking datasets of SHD and SSC were provided by [Cramer et al. (2020)](https://doi.org/10.1109/TNNLS.2020.3044364) for speech command recognition using [LAUSCHER](https://github.com/electronicvisions/lauscher), a biologically plausible model to convert audio waveforms into spike trains based on physiological processes. However, the SSC was too large to be used for training because of the complexity it demands, theefore the original SC dataset was cut down to roughly 10% of its size (10,500 audio files) so it can be used for classification. Thereafter, it was encoded using the LAUSCHER into spiking format.  The TESS dataset was retrieved from [Toronto emotional speech set (2020)](https://www.kaggle.com/datasets/ejlok1/toronto-emotional-speech-set-tess) and also encoded to spikes using the LAUSCHER dataset.
 
-- The Spiking Heidelberg Digits (SHD) dataset contains spoken digits from 0 to 9 in both English and German (20 classes). The train and test sets contain 8332 and 2088 examples respectively (there is no validation set).
 
-- The Spiking Speech Commands (SSC) dataset is based on the Google Speech Commands v0.2 dataset and contains 35 classes from a larger number of speakers. The number of examples in the train, validation and test splits are 75466, 9981 and 20382 respectively.
 
-Both data sets can be downloaded from the [Zenke Lab website](https://zenkelab.org/resources/spiking-heidelberg-datasets-shd/).
+The spiking versions of the HD and SC can be downloaded from the [Zenke Lab website](https://zenkelab.org/resources/spiking-heidelberg-datasets-shd/).
 
 ### Non-spiking data sets
 
-The original, non-spiking versions of the SHD and SSC datasets are also available and can be used in this framework. With our approach, acoustic features are extracted from the waveforms and directly fed into spiking neural networks. The conversion from filterbank features to spike trains therefore happens in a trainable fashion inside the neuronal dynamics of the first hidden layer. Moreover, the initial (non-trainable) transformation of the audio waveforms into filterbank features is fast enough to be performed during training, so that no preliminary processing of the audio is required.
+The original, SC and HD datasets are also available and can be used in this framework.Acoustic features from the dataset are extracted from the waveform usiing frame based encoding (MFCC and Mel spectrogram) and passed into the neural networks. The features are converted to spike trains inside the first hidden layer of the network. Furthermore, no prior audio processing is necessary because the first (non-trainable) transformation of the audio waveforms into features can be completed quickly enough to be completed during training.
+
 
 - The Heidelberg Digits (HD) data set can also be downloaded from the same [website](https://zenkelab.org/resources/spiking-heidelberg-datasets-shd/) as its spiking counterpart.
 
-- The second version of the (non-spiking) Google Speech Command (SC) data set, introduced by [Warden (2018)](https://arxiv.org/abs/1804.03209), can be found on the [TensorFlow website](https://www.tensorflow.org/datasets/catalog/speech_commands).
+- The  Speech Command (SC) data set, introduced by [Warden (2018)](https://arxiv.org/abs/1804.03209), can be found on the [TensorFlow website](https://www.tensorflow.org/datasets/catalog/speech_commands).
 
-Note that the training/validation/testing splits are different for the SC and SSC data sets. The SC has a 80% / 10% / 10% partition instead of 70% / 10% / 20% for the SSC, which makes a direct comparison impossible between the accuracies on the two tasks.
+The data loader implementation encompasses three distinct dataset classes, tailored to handle varied spiking dataset formats: `SpikingDataset`, `NPZSpikingDataset`, and `MatSpikingDataset`. These classes are  designed to streamline the loading and preprocessing of spiking neural network data for ASR tasks, ensuring robustness and efficiency. 
+
+The `SpikingDataset` class is adept at managing datasets structured as HDF5 files, exemplified by the lauscher encoded HD. It efficiently parses data from HDF5 files, generating spike trains characterized by predefined time steps and unit counts. Each data sample comprises spike trains represented as sparse tensors, enabling seamless integration with neural network architectures. Additionally, this class offers methods for individual data sample retrieval and batch generation, facilitating model training and evaluation. 
+
+ 
+In contrast, the `NPZSpikingDataset` class caters to spiking datasets organized as folders, where each folder corresponds to a distinct label and contains NumPy `.npz` files. Leveraging this structure, the class adeptly loads data from `.npz` files, constructs spike trains conforming to specified time step configurations, and extracts labels from folder names. Data samples are represented as dense tensors, ensuring compatibility with a wide array of machine learning frameworks. 
+
+ 
+Meanwhile, the `MatSpikingDataset` class specializes in managing datasets structured as folders containing MATLAB `.mat` files, with each file constituting a single data sample. By parsing data from these files, the class generates spike trains conforming to the prescribed time step parameters. Subsequently, labels are extracted from folder names, enabling seamless association with corresponding data samples. Encapsulating data retrieval and batch generation functionalities, this class facilitates efficient utilization of spiking neural network data in model training pipelines. 
+
+
+
+Moreover, a meticulously crafted function named `load_spiking_datasets` orchestrates the selection of the appropriate dataset class based on dataset specifications, such as name and split configuration. By initializing the chosen dataset class with user-defined parameters, this function ensures seamless integration of data loading mechanisms into machine learning workflows. Subsequently, it returns a DataLoader object, meticulously configured to facilitate efficient batch processing, encompassing options for data shuffling and parallelized loading for expedited model training and evaluation. 
 
 ## Installation
 
-    git clone https://github.com/idiap/sparch.git
+    git clone [https://github.com/idiap/sparch.git](https://github.com/Ayomipo6/sparch.git)
     cd sparch
     pip install -r requirements.txt
     python setup.py install
@@ -93,12 +104,22 @@ An SNN can then be simply implemented as a PyTorch module:
 
 and used for other tasks. Note that by default, the last layer of the SNN is a readout layer that produces non-sequential outputs. For sequential outputs, simply set `use_readout_layer=False`. Moreover, the inputs do not have to be binary spike trains.
 
-Standard artificial neural networks (ANNs) with non-spiking neurons are also defined in `sparch/models/ann_models.py`, in order to have a point of comparison for the spiking baseline. We implemented the following types of models: MLPs, RNNs, [LiGRUs](https://doi.org/10.1109/TETCI.2017.2762739) and [GRUs](https://doi.org/10.48550/arXiv.1406.1078).
+Standard artificial neural networks (ANNs) with non-spiking neurons are also defined in `sparch/models/ann_models.py`, in order to have a point of comparison for the spiking baseline. We implemented the following types of models: MLPs, RNNs (https://doi.org/10.1109/TETCI.2017.2762739) and [GRUs](https://doi.org/10.48550/arXiv.1406.1078).
 
 ## Structure of the git repository
 
 ```
 .
+├── script
+|   ├── class.py
+|   ├── load_mat.py
+|   ├──  load_npz.py
+|   ├──  matShapeVerify.py
+|   ├──  max_time.py
+|   ├──  prepare_datasets.py
+|   ├── load_mat.py
+|   ├──  split_datasets.py
+    ├── validation_split_datasets.py
 ├── sparch
 │   ├── dataloaders
 |   |   ├── nonspiking_datasets.py
@@ -112,18 +133,3 @@ Standard artificial neural networks (ANNs) with non-spiking neurons are also def
 │   └── exp.py
 |
 └── run_exp.py
-```
-
-## Citation
-If you use this framework in your research, please cite it as
-```
-@article{bittar2022surrogate,
-  title={A surrogate gradient spiking baseline for speech command recognition},
-  author={Bittar, Alexandre and Garner, Philip N},
-  journal={Frontiers in Neuroscience},
-  volume={16},
-  year={2022},
-  publisher={Frontiers},
-  doi={10.3389/fnins.2022.865897}
-}
-```
