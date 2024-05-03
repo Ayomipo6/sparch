@@ -33,6 +33,6 @@ class LabelProcessor:
 
 
 if __name__ == "__main__":
-    data_folder = "/Users/demiladepopoola/Development/Archive/hd/hd_audio/audio"
+    data_folder = ""
     processor = LabelProcessor(data_folder)
     processor.process_folder()

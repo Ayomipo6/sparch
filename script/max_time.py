@@ -28,7 +28,7 @@ def find_max_duration_and_file(data_folder):
     return max_duration, max_duration_file
 
 # Example usage
-data_folder = '/Users/demiladepopoola/Development/Archive/TESS_FLAC'
+data_folder = ''
 max_time, longest_file = find_max_duration_and_file(data_folder)
 print(f"The maximum duration in the dataset is: {max_time} seconds, found in file: {longest_file}")
 

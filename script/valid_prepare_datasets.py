@@ -7,7 +7,7 @@ def prepare_dataset(dataset_dir, training_list_path, validation_list_path, testi
     all_files = []
     for root, dirs, files in os.walk(dataset_dir):
         for file in files:
-            if file.endswith('.mat'):
+            if file.endswith('.npz'):
                 relative_path = os.path.relpath(root, dataset_dir)
                 all_files.append((os.path.join(relative_path, file), os.path.basename(relative_path)))
     
@@ -29,9 +29,9 @@ def prepare_dataset(dataset_dir, training_list_path, validation_list_path, testi
     test_df['file_path'].to_csv(testing_list_path, header=False, index=False)
 
 # Example usage
-dataset_dir = '/path/to/your/dataset'
-training_list_path = '/path/to/your/training_list.txt'
-validation_list_path = '/path/to/your/validation_list.txt'
-testing_list_path = '/path/to/your/testing_list.txt'
+dataset_dir = '/Users/ayo/datasets/ssc'
+training_list_path = '/Users/ayo/datasets/ssc/training_list.txt'
+validation_list_path = '/Users/ayo/datasets/ssc/validation_list.txt'
+testing_list_path = '/Users/ayo/datasets/ssc/testing_list.txt'
 
 prepare_dataset(dataset_dir, training_list_path, validation_list_path, testing_list_path)

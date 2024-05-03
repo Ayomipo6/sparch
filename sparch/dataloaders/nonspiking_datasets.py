@@ -97,6 +97,7 @@ class HeidelbergDigits(Dataset):
         # Compute acoustic features
         
         x = torchaudio.compliance.kaldi.fbank(x, num_mel_bins=40)
+        #x = torchaudio.compliance.kaldi.mfcc(x, num_ceps=13)
 
         # Get label (digits 0-9 in eng and germ)
         y = int(filename[-6])
@@ -167,7 +168,8 @@ class SpeechCommands(Dataset):
         else:
             self.file_list = load_list(str(split) + "_list.txt")
 
-        self.labels = sorted(next(os.walk("./" + data_folder))[1])[1:]
+        self.labels = sorted(next(os.walk(data_folder))[1])
+
 
         # Data augmentation
         if use_augm and split == "training":
@@ -208,6 +210,7 @@ class SpeechCommands(Dataset):
 
         # Compute acoustic features
         x = torchaudio.compliance.kaldi.fbank(x, num_mel_bins=40)
+        #x = torchaudio.compliance.kaldi.mfcc(x, num_ceps=13)
 
         # Get label
         relpath = os.path.relpath(filename, self.data_folder)
@@ -305,6 +308,7 @@ class TorontoEmotionalSpeechSet(Dataset):
 
         # Compute acoustic features
         x = torchaudio.compliance.kaldi.fbank(x, num_mel_bins=40)
+        #x = torchaudio.compliance.kaldi.mfcc(x, num_ceps=13)
 
         # Get label
         relpath = os.path.relpath(filename, self.data_folder)

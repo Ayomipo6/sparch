@@ -277,7 +277,8 @@ class Experiment:
         # For the non-spiking datasets
         elif self.dataset_name in ["hd", "sc", "tess"]:
 
-            self.nb_inputs = 40
+            #self.nb_inputs =13
+            self.nb_inputs =40
             if self.dataset_name == "hd":
                 self.nb_outputs = 20
             elif self.dataset_name == "tess":
@@ -392,7 +393,7 @@ class Experiment:
         epoch_spike_rate = 0
 
         # Loop over batches from train set
-        for step, (x, y) in enumerate(self.train_loader):
+        for step,(x,y) in enumerate(self.train_loader):
             # Your training code here
 
             # Dataloader uses cpu to allow pin memory
@@ -458,7 +459,7 @@ class Experiment:
             epoch_spike_rate = 0
 
             # Loop over batches from validation set
-            for step, (x, y) in enumerate(self.valid_loader):
+            for step, (x,y) in enumerate(self.valid_loader):
 
                 # Dataloader uses cpu to allow pin memory
                 x = x.to(self.device)
@@ -519,7 +520,7 @@ class Experiment:
             logging.info("\n------ Begin Testing ------\n")
 
             # Loop over batches from test set
-            for step, (x, y) in enumerate(test_loader):
+            for step, (x,y) in enumerate(test_loader):
                 x = x.to(self.device)
                 y = y.to(self.device)
 

@@ -79,7 +79,7 @@ def add_training_options(parser):
     parser.add_argument(
         "--nb_epochs",
         type=int,
-        default=5,
+        default=10,
         help="Number of training epochs (i.e. passes through the dataset).",
     )
     parser.add_argument(

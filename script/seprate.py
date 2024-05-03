@@ -4,10 +4,10 @@ import scipy.io
 from shutil import copy2
 
 # Paths to the directories containing the encoded and original files
-encoded_dir =  '/Users/demiladepopoola/Development/Archive/encoded_signals'
-original_dir = '/Users/demiladepopoola/Downloads/speech_commands_v0.02-003/'
+encoded_dir =  '/Users/popoola/Development/Archive/encoded_signals'
+original_dir = '/Users/popoola/Downloads/speech_commands_v0.02-003/'
 
-output_dir = '/Users/demiladepopoola/Downloads/sampled/speech_commands_v0.02-003'
+output_dir = '/Users/popoola/Downloads/sampled/speech_commands_v0.02-003'
 
 # Ensure the output directory exists
 os.makedirs(output_dir, exist_ok=True)

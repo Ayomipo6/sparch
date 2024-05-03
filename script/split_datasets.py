@@ -3,9 +3,9 @@ import shutil
 import random
 
 # Set the path to your dataset directory
-dataset_path = '/Users/demiladepopoola/Downloads/speech_commands_v0.02-003/'
+dataset_path = '/Users/popoola/Downloads/speech_commands_v0.02-003/'
 # Set the path for the new sampled dataset directory
-sampled_dataset_path = '/Users/demiladepopoola/Downloads/sampled_speech_commands/'
+sampled_dataset_path = '/Users/popoola/Downloads/sampled_speech_commands/'
 
 # Ensure the destination directory exists
 os.makedirs(sampled_dataset_path, exist_ok=True)

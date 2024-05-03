@@ -25,8 +25,8 @@ def prepare_dataset(dataset_dir, training_list_path, testing_list_path):
     test_df['file_path'].to_csv(testing_list_path, header=False, index=False)
 
 # Example usage
-dataset_dir = '/Users/demiladepopoola/Development/hd_spiketrum_encoded'  # Update this to the path where your dataset is extracted
-training_list_path = '/Users/demiladepopoola/Development/hd_spiketrum_encoded/train_list.txt'
-testing_list_path = '/Users/demiladepopoola/Development/hd_spiketrum_encoded/test_list.txt'
+dataset_dir = '/Users/popoola/Development/hd_spiketrum_encoded'  # Update this to the path where your dataset is extracted
+training_list_path = '/Users/popoola/Development/hd_spiketrum_encoded/train_list.txt'
+testing_list_path = '/Users/popoola/Development/hd_spiketrum_encoded/test_list.txt'
 
 prepare_dataset(dataset_dir, training_list_path, testing_list_path)

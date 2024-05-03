@@ -1,7 +1,7 @@
 import numpy as np
 
 # Replace 'your_file_path.npz' with the path to your .npz file
-npz_file_path = '/Users/demiladepopoola/Development/Archive/TESS_npz/OAF_Sad/OAF_hush_sad.npz'
+npz_file_path = ''
 
 # Load the npz file
 with np.load(npz_file_path, allow_pickle=True) as data:

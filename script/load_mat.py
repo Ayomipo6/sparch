@@ -2,7 +2,7 @@ import numpy as np
 from scipy.io import loadmat
 
 # Path to your .mat file
-mat_file_path = '/Users/demiladepopoola/Development/TESS_100_spiketrum_encoded/OAF_Fear/OAF_dodge_fear.mat'
+mat_file_path = ''
 
 # Load the .mat file
 mat_data = loadmat(mat_file_path)

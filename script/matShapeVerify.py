@@ -4,13 +4,13 @@ from pathlib import Path
 import os
 import numpy as np
 import sys
-sys.path.append('/Users/demiladepopoola/Development/sparch')
+sys.path.append('')
 from sparch.dataloaders.spiking_datasets import MatSpikingDataset
 # Assuming you have the MatSpikingDataset class defined above this code.
 
 def main():
     # Parameters for initializing the dataset
-    data_folder = '/Users/demiladepopoola/Development/TESS_mat'  # Replace with the path to your dataset folder
+    data_folder = ''  # Replace with the path to your dataset folder
     split = 'train'  # or 'test'
     nb_steps = 1000  # Number of time steps (as in your class definition)
 
